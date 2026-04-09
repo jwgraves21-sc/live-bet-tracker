@@ -1,0 +1,777 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+<meta name="description" content="Track sports bets, manage pools, monitor your bankroll, and analyze ROI — all in one clean dashboard.">
+<meta name="theme-color" content="#0b0f14">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
+<!-- Open Graph / Social -->
+<meta property="og:type" content="website">
+<meta property="og:title" content="BetTracker — Sports Bet & Pool Tracker">
+<meta property="og:description" content="Track sports bets, manage pools, monitor your bankroll, and analyze ROI.">
+<meta property="og:image" content="https://via.placeholder.com/1200x630/0b0f14/d4a853?text=%F0%9F%8F%86+BetTracker">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="BetTracker — Sports Bet & Pool Tracker">
+<meta name="twitter:description" content="Track sports bets, manage pools, monitor your bankroll, and analyze ROI.">
+
+<!-- Favicon (inline SVG so no external file needed) -->
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏆</text></svg>">
+
+<title>BetTracker — Sports Bet & Pool Tracker</title>
+
+<!-- Preconnect for faster font loading -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Outfit:wght@600;700;800&display=swap" rel="stylesheet">
+
+<!-- Dependencies -->
+<script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.9/babel.min.js"></script>
+<script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/recharts/2.15.3/Recharts.min.js"></script>
+
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { -webkit-text-size-adjust: 100%; scroll-behavior: smooth; }
+  html, body, #root { height: 100%; }
+  body { background: #0b0f14; color: #e6edf3; font-family: 'DM Sans', 'Segoe UI', system-ui, sans-serif; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; line-height: 1.5; }
+
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: #161b22; }
+  ::-webkit-scrollbar-thumb { background: #30363d; border-radius: 3px; }
+  ::-webkit-scrollbar-thumb:hover { background: #484f58; }
+
+  /* Selection */
+  ::selection { background: rgba(212,168,83,0.3); color: #fff; }
+
+  @keyframes fadeIn { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:translateY(0); } }
+  @keyframes pulse { 0%,100% { opacity:1; } 50% { opacity:0.5; } }
+
+  /* Form elements */
+  input, select, textarea {
+    background: #161b22; border: 1px solid #30363d; color: #e6edf3;
+    padding: 8px 12px; border-radius: 8px; font-size: 14px;
+    font-family: inherit; outline: none; transition: border-color 0.2s, box-shadow 0.2s; width: 100%;
+  }
+  input:focus, select:focus { border-color: #d4a853; box-shadow: 0 0 0 3px rgba(212,168,83,0.15); }
+  input::placeholder { color: #484f58; }
+  select { cursor: pointer; appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%238b949e' viewBox='0 0 16 16'%3E%3Cpath d='M8 11L3 6h10z'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 10px center; padding-right: 30px; }
+  button { cursor: pointer; font-family: inherit; }
+  input[type="number"] { -moz-appearance: textfield; }
+  input[type="number"]::-webkit-inner-spin-button,
+  input[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+
+  /* Components */
+  .card { background: #161b22; border: 1px solid #21262d; border-radius: 12px; padding: 20px; transition: border-color 0.2s; }
+  .card:hover { border-color: #30363d; }
+  .badge { display: inline-flex; align-items: center; gap: 4px; padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+  .btn { padding: 8px 16px; border-radius: 8px; border: none; font-weight: 600; font-size: 13px; transition: all 0.15s ease; }
+  .btn:active { transform: scale(0.97); }
+  .btn-primary { background: linear-gradient(135deg, #d4a853, #b8922e); color: #0b0f14; }
+  .btn-primary:hover { filter: brightness(1.1); transform: translateY(-1px); box-shadow: 0 4px 12px rgba(212,168,83,0.25); }
+  .btn-primary:disabled { opacity: 0.5; pointer-events: none; }
+  .btn-ghost { background: transparent; border: 1px solid #30363d; color: #8b949e; }
+  .btn-ghost:hover { border-color: #d4a853; color: #d4a853; }
+  .btn-danger { background: #3d1114; color: #ef4444; border: 1px solid #5c1d22; }
+  .btn-danger:hover { background: #5c1d22; }
+
+  .stat-card { background: linear-gradient(135deg, #161b22 0%, #1c2333 100%); border: 1px solid #21262d; border-radius: 14px; padding: 20px; position: relative; overflow: hidden; transition: transform 0.2s, border-color 0.2s; }
+  .stat-card:hover { transform: translateY(-2px); border-color: #30363d; }
+
+  /* Navigation */
+  .sidebar-btn { display: flex; align-items: center; gap: 12px; width: 100%; padding: 12px 16px; border-radius: 10px; border: none; font-weight: 500; font-size: 14px; transition: all 0.15s; background: transparent; color: #8b949e; text-align: left; }
+  .sidebar-btn:hover { color: #e6edf3; background: rgba(255,255,255,0.04); }
+  .sidebar-btn.active { background: rgba(212,168,83,0.12); color: #d4a853; }
+  .tab-btn { padding: 10px 18px; border-radius: 10px; border: none; font-weight: 600; font-size: 13px; transition: all 0.15s; background: transparent; color: #8b949e; white-space: nowrap; }
+  .tab-btn:hover { color: #e6edf3; background: rgba(255,255,255,0.04); }
+  .tab-btn.active { background: linear-gradient(135deg, #d4a853, #b8922e); color: #0b0f14; }
+
+  /* Modals */
+  .overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.65); backdrop-filter: blur(4px); z-index: 50; display: flex; align-items: center; justify-content: center; animation: fadeIn 0.2s; }
+  .modal { background: #161b22; border: 1px solid #30363d; border-radius: 16px; padding: 28px; width: 90%; max-width: 560px; max-height: 90vh; overflow-y: auto; animation: fadeIn 0.25s; box-shadow: 0 24px 48px rgba(0,0,0,0.4); }
+
+  /* Layout */
+  .desktop-sidebar { width: 240px; background: #0d1117; border-right: 1px solid #21262d; padding: 20px 12px; display: flex; flex-direction: column; position: fixed; top: 0; left: 0; bottom: 0; z-index: 40; }
+  .mobile-nav { display: none; }
+  .main-area { margin-left: 240px; }
+
+  @media (max-width: 768px) {
+    .desktop-sidebar { display: none !important; }
+    .mobile-nav { display: flex !important; }
+    .main-area { margin-left: 0 !important; }
+  }
+
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  @media (max-width: 600px) { .grid-2 { grid-template-columns: 1fr; } }
+
+  /* Footer */
+  .footer-note {
+    text-align: center; padding: 32px 20px 24px;
+    border-top: 1px solid #21262d; margin-top: 48px;
+    font-size: 13px; color: #484f58; line-height: 1.8;
+  }
+  .footer-note a { color: #d4a853; text-decoration: none; transition: color 0.2s; }
+  .footer-note a:hover { color: #f0d68a; text-decoration: underline; }
+
+  /* Loading screen */
+  .loading-screen {
+    display: flex; align-items: center; justify-content: center;
+    height: 100vh; background: #0b0f14; color: #8b949e;
+    flex-direction: column; gap: 12px;
+  }
+  .loading-screen .spinner {
+    width: 32px; height: 32px; border: 3px solid #21262d;
+    border-top-color: #d4a853; border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* Noscript */
+  noscript { display: flex; align-items: center; justify-content: center; height: 100vh; text-align: center; padding: 20px; }
+</style>
+</head>
+<body>
+
+<noscript>
+  <div style="background:#0b0f14;color:#e6edf3;padding:40px;text-align:center;font-family:sans-serif;">
+    <h1>🏆 BetTracker</h1>
+    <p style="margin-top:16px;color:#8b949e;">JavaScript is required to run this app. Please enable it in your browser settings.</p>
+  </div>
+</noscript>
+
+<div id="root">
+  <div class="loading-screen">
+    <div class="spinner"></div>
+    <div style="font-family:'DM Sans',sans-serif;font-size:14px;">Loading BetTracker…</div>
+  </div>
+</div>
+
+<script type="text/babel" data-type="module">
+const { useState, useEffect, useMemo } = React;
+const { AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } = Recharts;
+
+/* ═══════════════════════════════════════════════════════
+   CONSTANTS
+   ═══════════════════════════════════════════════════════ */
+const SPORTS = ["NFL","NBA","NHL","MLB","NCAA Football","NCAA Basketball","Golf","Tennis","Soccer","MMA"];
+const BET_TYPES = ["Moneyline","Spread","Over/Under","Prop","Parlay","Teaser","Futures"];
+const STATUSES = ["Pending","Won","Lost","Push"];
+const POOL_FORMATS = ["Pick 'Em","Bracket","Survivor","Season-Long","Confidence"];
+const TABS = ["Dashboard","My Bets","Pools","Live"];
+const TAB_ICONS = { Dashboard:"📊", "My Bets":"🎯", Pools:"🏊", Live:"⚡" };
+const STATUS_COLORS = { Pending:"#f59e0b", Won:"#10b981", Lost:"#ef4444", Push:"#6b7280" };
+const genId = () => Date.now().toString(36) + Math.random().toString(36).slice(2,7);
+
+/* ═══════════════════════════════════════════════════════
+   HELPERS
+   ═══════════════════════════════════════════════════════ */
+function parseOdds(odds) {
+  const n = parseInt(odds, 10);
+  if (isNaN(n) || n === 0) return { decimal: 0, impliedProb: 0 };
+  const decimal = n > 0 ? n / 100 + 1 : 100 / Math.abs(n) + 1;
+  const impliedProb = n > 0 ? 100 / (n + 100) : Math.abs(n) / (Math.abs(n) + 100);
+  return { decimal, impliedProb };
+}
+function calcPayout(odds, wager) { return parseOdds(odds).decimal * wager; }
+const fmt = n => n.toLocaleString("en-US", { style: "currency", currency: "USD" });
+const pct = n => (n * 100).toFixed(1) + "%";
+const shortDate = d => new Date(d).toLocaleDateString("en-US", { month: "short", day: "numeric" });
+
+/* ═══════════════════════════════════════════════════════
+   PERSISTENCE — localStorage with error handling
+   ═══════════════════════════════════════════════════════ */
+const STORAGE_PREFIX = "bettracker_";
+function loadLS(key, fallback) {
+  try {
+    const raw = localStorage.getItem(STORAGE_PREFIX + key);
+    return raw ? JSON.parse(raw) : fallback;
+  } catch { return fallback; }
+}
+function saveLS(key, val) {
+  try { localStorage.setItem(STORAGE_PREFIX + key, JSON.stringify(val)); } catch (e) { console.warn("Storage write failed:", e); }
+}
+
+/* ═══════════════════════════════════════════════════════
+   APP ROOT
+   ═══════════════════════════════════════════════════════ */
+function App() {
+  const [tab, setTab] = useState("Dashboard");
+  const [bets, setBets] = useState(() => loadLS("bets", []));
+  const [pools, setPools] = useState(() => loadLS("pools", []));
+  const [bankroll, setBankroll] = useState(() => loadLS("bankroll", { starting: 1000, adjustments: [] }));
+  const [editingBet, setEditingBet] = useState(null);
+  const [editingPool, setEditingPool] = useState(null);
+  const [filterSport, setFilterSport] = useState("All");
+  const [filterType, setFilterType] = useState("All");
+  const [filterStatus, setFilterStatus] = useState("All");
+  const [showBankrollModal, setShowBankrollModal] = useState(false);
+
+  useEffect(() => { saveLS("bets", bets); }, [bets]);
+  useEffect(() => { saveLS("pools", pools); }, [pools]);
+  useEffect(() => { saveLS("bankroll", bankroll); }, [bankroll]);
+
+  /* — Bet CRUD — */
+  const upsertBet = bet => {
+    setBets(prev => { const i = prev.findIndex(b => b.id === bet.id); if (i >= 0) { const n = [...prev]; n[i] = bet; return n; } return [...prev, bet]; });
+    setEditingBet(null);
+  };
+  const deleteBet = id => { if (confirm("Delete this bet?")) setBets(p => p.filter(b => b.id !== id)); };
+  const setStatus = (id, s) => setBets(p => p.map(b => b.id === id ? { ...b, status: s } : b));
+
+  /* — Pool CRUD — */
+  const upsertPool = pool => {
+    setPools(prev => { const i = prev.findIndex(p => p.id === pool.id); if (i >= 0) { const n = [...prev]; n[i] = pool; return n; } return [...prev, pool]; });
+    setEditingPool(null);
+  };
+  const deletePool = id => { if (confirm("Delete this pool?")) setPools(p => p.filter(x => x.id !== id)); };
+
+  /* — Stats — */
+  const stats = useMemo(() => {
+    const settled = bets.filter(b => b.status === "Won" || b.status === "Lost");
+    const wins = bets.filter(b => b.status === "Won");
+    const losses = bets.filter(b => b.status === "Lost");
+    const totalWagered = settled.reduce((s, b) => s + (b.wager || 0), 0);
+    const totalWon = wins.reduce((s, b) => s + calcPayout(b.odds, b.wager), 0);
+    const netPL = totalWon - totalWagered;
+    const roi = totalWagered > 0 ? netPL / totalWagered : 0;
+    const winRate = settled.length > 0 ? wins.length / settled.length : 0;
+    const pending = bets.filter(b => b.status === "Pending");
+    const pendingExposure = pending.reduce((s, b) => s + (b.wager || 0), 0);
+    const adjs = bankroll.adjustments.reduce((s, a) => s + a.amount, 0);
+    const currentBankroll = bankroll.starting + adjs + netPL;
+    const units = bankroll.starting > 0 ? netPL / (bankroll.starting * 0.01) : 0;
+    return { totalWagered, netPL, roi, winRate, wins: wins.length, losses: losses.length, pending: pending.length, settled: settled.length, pendingExposure, currentBankroll, units };
+  }, [bets, bankroll]);
+
+  /* — P&L chart data — */
+  const plData = useMemo(() => {
+    const sorted = [...bets].filter(b => b.status === "Won" || b.status === "Lost").sort((a, b) => new Date(a.date) - new Date(b.date));
+    let cum = 0;
+    return sorted.map(b => {
+      cum += b.status === "Won" ? calcPayout(b.odds, b.wager) - b.wager : -b.wager;
+      return { name: shortDate(b.date), pl: parseFloat(cum.toFixed(2)) };
+    });
+  }, [bets]);
+
+  /* — Filtered bets — */
+  const filteredBets = useMemo(() => {
+    return bets.filter(b => {
+      if (filterSport !== "All" && b.sport !== filterSport) return false;
+      if (filterType !== "All" && b.betType !== filterType) return false;
+      if (filterStatus !== "All" && b.status !== filterStatus) return false;
+      return true;
+    }).sort((a, b) => new Date(b.date) - new Date(a.date));
+  }, [bets, filterSport, filterType, filterStatus]);
+
+  const newBet = () => setEditingBet({ id: genId(), sport: "NFL", event: "", pick: "", betType: "Moneyline", odds: "", wager: "", date: new Date().toISOString().split("T")[0], status: "Pending", notes: "" });
+  const newPool = () => setEditingPool({ id: genId(), name: "", format: "Pick 'Em", sport: "NFL", picks: [], status: "Active" });
+
+  return (
+    <div style={{ display: "flex", minHeight: "100vh" }}>
+
+      {/* ═══ Sidebar ═══ */}
+      <nav className="desktop-sidebar" aria-label="Main navigation">
+        <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "4px 8px", marginBottom: 32 }}>
+          <span style={{ fontSize: 24 }} role="img" aria-label="trophy">🏆</span>
+          <span style={{ fontFamily: "'Outfit',sans-serif", fontWeight: 800, fontSize: 20, background: "linear-gradient(135deg,#d4a853,#f0d68a)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>BetTracker</span>
+        </div>
+        {TABS.map(t => (
+          <button key={t} className={`sidebar-btn ${tab === t ? "active" : ""}`} onClick={() => setTab(t)} aria-current={tab === t ? "page" : undefined}>
+            <span style={{ fontSize: 18 }}>{TAB_ICONS[t]}</span> {t}
+          </button>
+        ))}
+        <div style={{ flex: 1 }} />
+        <div style={{ padding: "16px 8px", borderTop: "1px solid #21262d" }}>
+          <div style={{ fontSize: 11, color: "#484f58", textTransform: "uppercase", letterSpacing: 1, marginBottom: 8 }}>Bankroll</div>
+          <div style={{ fontFamily: "'Outfit',sans-serif", fontWeight: 700, fontSize: 22, color: stats.currentBankroll >= bankroll.starting ? "#10b981" : "#ef4444" }}>{fmt(stats.currentBankroll)}</div>
+          <button className="btn btn-ghost" style={{ marginTop: 8, width: "100%", fontSize: 12 }} onClick={() => setShowBankrollModal(true)}>Manage</button>
+        </div>
+      </nav>
+
+      {/* ═══ Main content ═══ */}
+      <main className="main-area" style={{ flex: 1, minHeight: "100vh", display: "flex", flexDirection: "column" }}>
+        {/* Mobile nav */}
+        <nav className="mobile-nav" style={{ position: "sticky", top: 0, zIndex: 30, background: "#0d1117", borderBottom: "1px solid #21262d", padding: "8px 12px", gap: 4, overflowX: "auto" }} aria-label="Mobile navigation">
+          {TABS.map(t => <button key={t} className={`tab-btn ${tab === t ? "active" : ""}`} onClick={() => setTab(t)}>{TAB_ICONS[t]} {t}</button>)}
+        </nav>
+
+        <div style={{ padding: "24px 28px", maxWidth: 1200, margin: "0 auto", width: "100%", flex: 1 }}>
+          {tab === "Dashboard" && <Dashboard stats={stats} plData={plData} bets={bets} bankroll={bankroll} />}
+          {tab === "My Bets" && <BetsTab bets={filteredBets} onEdit={setEditingBet} onDelete={deleteBet} onStatus={setStatus} filterSport={filterSport} setFilterSport={setFilterSport} filterType={filterType} setFilterType={setFilterType} filterStatus={filterStatus} setFilterStatus={setFilterStatus} onNew={newBet} />}
+          {tab === "Pools" && <PoolsTab pools={pools} onEdit={setEditingPool} onDelete={deletePool} onNew={newPool} onSave={upsertPool} />}
+          {tab === "Live" && <LiveTab bets={bets.filter(b => b.status === "Pending")} />}
+        </div>
+
+        <footer className="footer-note">
+          Built by Will Graves<br />
+          Use it in good health 🤝<br />
+          Send feedback to <a href="mailto:jwgraves21@gmail.com">jwgraves21@gmail.com</a>
+        </footer>
+      </main>
+
+      {/* ═══ Modals ═══ */}
+      {editingBet && <div className="overlay" onClick={() => setEditingBet(null)}><div className="modal" onClick={e => e.stopPropagation()}><BetForm bet={editingBet} onSave={upsertBet} onCancel={() => setEditingBet(null)} /></div></div>}
+      {editingPool && <div className="overlay" onClick={() => setEditingPool(null)}><div className="modal" style={{ maxWidth: 620 }} onClick={e => e.stopPropagation()}><PoolForm pool={editingPool} onSave={upsertPool} onCancel={() => setEditingPool(null)} /></div></div>}
+      {showBankrollModal && <div className="overlay" onClick={() => setShowBankrollModal(false)}><div className="modal" onClick={e => e.stopPropagation()}><BankrollModal bankroll={bankroll} setBankroll={setBankroll} onClose={() => setShowBankrollModal(false)} /></div></div>}
+    </div>
+  );
+}
+
+/* ═══════════════════════════════════════════════════════
+   DASHBOARD
+   ═══════════════════════════════════════════════════════ */
+function Dashboard({ stats, plData, bets, bankroll }) {
+  const sportBreakdown = useMemo(() => {
+    const map = {};
+    bets.filter(b => b.status === "Won" || b.status === "Lost").forEach(b => {
+      if (!map[b.sport]) map[b.sport] = { wins: 0, losses: 0, net: 0 };
+      if (b.status === "Won") { map[b.sport].wins++; map[b.sport].net += calcPayout(b.odds, b.wager) - b.wager; }
+      else { map[b.sport].losses++; map[b.sport].net -= b.wager; }
+    });
+    return Object.entries(map).map(([sport, d]) => ({ sport, ...d })).sort((a, b) => b.net - a.net);
+  }, [bets]);
+
+  const cards = [
+    { label: "Total Wagered", value: fmt(stats.totalWagered), icon: "💰", color: "#d4a853" },
+    { label: "Net P&L", value: fmt(stats.netPL), icon: stats.netPL >= 0 ? "📈" : "📉", color: stats.netPL >= 0 ? "#10b981" : "#ef4444" },
+    { label: "Win Rate", value: pct(stats.winRate), icon: "🎯", color: "#3b82f6" },
+    { label: "ROI", value: pct(stats.roi), icon: "⚡", color: stats.roi >= 0 ? "#10b981" : "#ef4444" },
+    { label: "Record", value: `${stats.wins}W - ${stats.losses}L`, icon: "📋", color: "#8b5cf6" },
+    { label: "Units +/-", value: stats.units.toFixed(1), icon: "📐", color: stats.units >= 0 ? "#10b981" : "#ef4444" },
+  ];
+
+  return (
+    <section style={{ animation: "fadeIn 0.3s" }}>
+      <h1 style={{ fontFamily: "'Outfit',sans-serif", fontWeight: 800, fontSize: 28, marginBottom: 24, background: "linear-gradient(135deg,#e6edf3,#8b949e)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>Dashboard</h1>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(160px,1fr))", gap: 14, marginBottom: 28 }}>
+        {cards.map((c, i) => (
+          <div key={i} className="stat-card" style={{ animation: `fadeIn 0.4s both`, animationDelay: `${i * 0.05}s` }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+              <div style={{ fontSize: 11, color: "#8b949e", textTransform: "uppercase", letterSpacing: 0.8, fontWeight: 600 }}>{c.label}</div>
+              <span style={{ fontSize: 18 }}>{c.icon}</span>
+            </div>
+            <div style={{ fontFamily: "'Outfit',sans-serif", fontWeight: 700, fontSize: 24, color: c.color, marginTop: 8 }}>{c.value}</div>
+          </div>
+        ))}
+      </div>
+      <div className="grid-2" style={{ marginBottom: 20 }}>
+        <div className="card">
+          <div style={{ fontSize: 13, fontWeight: 600, color: "#8b949e", marginBottom: 16, textTransform: "uppercase", letterSpacing: 0.5 }}>Cumulative P&L</div>
+          {plData.length > 0 ? (
+            <ResponsiveContainer width="100%" height={220}>
+              <AreaChart data={plData}>
+                <defs><linearGradient id="plG" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#d4a853" stopOpacity={0.3} /><stop offset="100%" stopColor="#d4a853" stopOpacity={0} /></linearGradient></defs>
+                <CartesianGrid strokeDasharray="3 3" stroke="#21262d" />
+                <XAxis dataKey="name" tick={{ fill: "#484f58", fontSize: 11 }} />
+                <YAxis tick={{ fill: "#484f58", fontSize: 11 }} tickFormatter={v => `$${v}`} />
+                <Tooltip contentStyle={{ background: "#1c2333", border: "1px solid #30363d", borderRadius: 8, color: "#e6edf3", fontSize: 13 }} formatter={v => [fmt(v), "P&L"]} />
+                <Area type="monotone" dataKey="pl" stroke="#d4a853" strokeWidth={2} fill="url(#plG)" />
+              </AreaChart>
+            </ResponsiveContainer>
+          ) : <div style={{ color: "#484f58", textAlign: "center", padding: 40 }}>No settled bets yet</div>}
+        </div>
+        <div className="card">
+          <div style={{ fontSize: 13, fontWeight: 600, color: "#8b949e", marginBottom: 16, textTransform: "uppercase", letterSpacing: 0.5 }}>By Sport</div>
+          {sportBreakdown.length > 0 ? (
+            <ResponsiveContainer width="100%" height={220}>
+              <BarChart data={sportBreakdown} layout="vertical">
+                <CartesianGrid strokeDasharray="3 3" stroke="#21262d" />
+                <XAxis type="number" tick={{ fill: "#484f58", fontSize: 11 }} tickFormatter={v => `$${v}`} />
+                <YAxis type="category" dataKey="sport" tick={{ fill: "#8b949e", fontSize: 11 }} width={90} />
+                <Tooltip contentStyle={{ background: "#1c2333", border: "1px solid #30363d", borderRadius: 8, color: "#e6edf3", fontSize: 13 }} formatter={v => [fmt(v), "Net"]} />
+                <Bar dataKey="net" radius={[0, 6, 6, 0]}>{sportBreakdown.map((e, i) => <Cell key={i} fill={e.net >= 0 ? "#10b981" : "#ef4444"} />)}</Bar>
+              </BarChart>
+            </ResponsiveContainer>
+          ) : <div style={{ color: "#484f58", textAlign: "center", padding: 40 }}>No data yet</div>}
+        </div>
+      </div>
+      {stats.pending > 0 && (
+        <div className="card" style={{ background: "linear-gradient(135deg,#1a1c2e,#161b22)", borderColor: "#d4a85333" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 8 }}>
+            <div>
+              <span style={{ fontSize: 13, color: "#d4a853", fontWeight: 600 }}>⏳ {stats.pending} Pending Bets</span>
+              <div style={{ fontSize: 12, color: "#8b949e", marginTop: 2 }}>Exposure: {fmt(stats.pendingExposure)}</div>
+            </div>
+            <div style={{ fontSize: 12, color: "#8b949e" }}>Bankroll at risk: {stats.currentBankroll > 0 ? pct(stats.pendingExposure / stats.currentBankroll) : "N/A"}</div>
+          </div>
+        </div>
+      )}
+    </section>
+  );
+}
+
+/* ═══════════════════════════════════════════════════════
+   BETS TAB
+   ═══════════════════════════════════════════════════════ */
+function BetsTab({ bets, onEdit, onDelete, onStatus, filterSport, setFilterSport, filterType, setFilterType, filterStatus, setFilterStatus, onNew }) {
+  return (
+    <section style={{ animation: "fadeIn 0.3s" }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20, flexWrap: "wrap", gap: 12 }}>
+        <h1 style={{ fontFamily: "'Outfit',sans-serif", fontWeight: 800, fontSize: 28, background: "linear-gradient(135deg,#e6edf3,#8b949e)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>My Bets</h1>
+        <button className="btn btn-primary" onClick={onNew}>+ New Bet</button>
+      </div>
+      <div style={{ display: "flex", gap: 10, marginBottom: 20, flexWrap: "wrap" }}>
+        <select value={filterSport} onChange={e => setFilterSport(e.target.value)} style={{ minWidth: 120, width: "auto" }}>
+          <option value="All">All Sports</option>
+          {SPORTS.map(s => <option key={s} value={s}>{s}</option>)}
+        </select>
+        <select value={filterType} onChange={e => setFilterType(e.target.value)} style={{ minWidth: 120, width: "auto" }}>
+          <option value="All">All Types</option>
+          {BET_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
+        </select>
+        <select value={filterStatus} onChange={e => setFilterStatus(e.target.value)} style={{ minWidth: 120, width: "auto" }}>
+          <option value="All">All Statuses</option>
+          {STATUSES.map(s => <option key={s} value={s}>{s}</option>)}
+        </select>
+      </div>
+      {bets.length === 0 ? (
+        <div className="card" style={{ textAlign: "center", padding: 60 }}>
+          <div style={{ fontSize: 40, marginBottom: 12 }}>🎲</div>
+          <div style={{ color: "#8b949e", fontSize: 15 }}>No bets match your filters. Try adjusting or add a new bet!</div>
+        </div>
+      ) : (
+        <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+          {bets.map(b => <BetCard key={b.id} bet={b} onEdit={() => onEdit(b)} onDelete={() => onDelete(b.id)} onStatus={s => onStatus(b.id, s)} />)}
+        </div>
+      )}
+    </section>
+  );
+}
+
+function BetCard({ bet, onEdit, onDelete, onStatus }) {
+  const payout = calcPayout(bet.odds, bet.wager);
+  const { impliedProb } = parseOdds(bet.odds);
+  const [open, setOpen] = useState(false);
+  return (
+    <div className="card" style={{ padding: 16, borderLeft: `3px solid ${STATUS_COLORS[bet.status]}` }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 12, flexWrap: "wrap" }}>
+        <div style={{ flex: 1, minWidth: 200 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6, flexWrap: "wrap" }}>
+            <span className="badge" style={{ background: STATUS_COLORS[bet.status] + "22", color: STATUS_COLORS[bet.status] }}>{bet.status}</span>
+            <span style={{ fontSize: 11, color: "#484f58", fontFamily: "'JetBrains Mono',monospace" }}>{bet.sport}</span>
+            <span style={{ fontSize: 11, color: "#484f58" }}>•</span>
+            <span style={{ fontSize: 11, color: "#484f58" }}>{bet.betType}</span>
+          </div>
+          <div style={{ fontWeight: 600, fontSize: 15, marginBottom: 2 }}>{bet.pick}</div>
+          <div style={{ fontSize: 13, color: "#8b949e" }}>{bet.event}</div>
+        </div>
+        <div style={{ textAlign: "right", minWidth: 140 }}>
+          <div style={{ fontFamily: "'JetBrains Mono',monospace", fontWeight: 600, fontSize: 14 }}>
+            <span style={{ color: "#8b949e", fontSize: 12 }}>Wager: </span>{fmt(bet.wager)}
+          </div>
+          <div style={{ fontFamily: "'JetBrains Mono',monospace", fontWeight: 600, fontSize: 14, color: "#d4a853" }}>
+            <span style={{ color: "#8b949e", fontSize: 12 }}>Payout: </span>{fmt(payout)}
+          </div>
+          <div style={{ fontSize: 11, color: "#484f58", marginTop: 2 }}>
+            {bet.odds > 0 ? "+" : ""}{bet.odds} ({pct(impliedProb)} imp.) • {shortDate(bet.date)}
+          </div>
+        </div>
+        <button className="btn btn-ghost" style={{ padding: "5px 10px", fontSize: 12 }} onClick={() => setOpen(!open)} aria-label="Bet actions">⋮</button>
+      </div>
+      {open && (
+        <div style={{ display: "flex", gap: 6, marginTop: 12, flexWrap: "wrap", borderTop: "1px solid #21262d", paddingTop: 12 }}>
+          {STATUSES.map(s => (
+            <button key={s} className="btn btn-ghost" style={{ padding: "4px 12px", fontSize: 11, borderColor: bet.status === s ? STATUS_COLORS[s] : undefined, color: bet.status === s ? STATUS_COLORS[s] : undefined }} onClick={() => { onStatus(s); setOpen(false); }}>{s}</button>
+          ))}
+          <div style={{ flex: 1 }} />
+          <button className="btn btn-ghost" style={{ padding: "4px 12px", fontSize: 11 }} onClick={onEdit}>Edit</button>
+          <button className="btn btn-danger" style={{ padding: "4px 12px", fontSize: 11 }} onClick={onDelete}>Delete</button>
+        </div>
+      )}
+      {bet.notes && <div style={{ fontSize: 12, color: "#6e7681", marginTop: 8, fontStyle: "italic" }}>📝 {bet.notes}</div>}
+    </div>
+  );
+}
+
+/* ═══════════════════════════════════════════════════════
+   BET FORM
+   ═══════════════════════════════════════════════════════ */
+function BetForm({ bet, onSave, onCancel }) {
+  const [form, setForm] = useState({ ...bet, wager: bet.wager || "", odds: bet.odds || "" });
+  const set = (k, v) => setForm(p => ({ ...p, [k]: v }));
+  const valid = form.pick && form.odds && form.wager && parseFloat(form.wager) > 0;
+  const payout = form.odds && form.wager ? calcPayout(form.odds, parseFloat(form.wager)) : 0;
+  const { impliedProb } = parseOdds(form.odds);
+
+  const handleSubmit = () => { if (valid) onSave({ ...form, wager: parseFloat(form.wager), odds: parseInt(form.odds, 10) }); };
+
+  return (
+    <div>
+      <h2 style={{ fontFamily: "'Outfit',sans-serif", fontWeight: 700, fontSize: 20, marginBottom: 20 }}>{bet.event ? "Edit Bet" : "New Bet"}</h2>
+      <div className="grid-2">
+        <label style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+          <span style={{ fontSize: 12, color: "#8b949e", fontWeight: 600 }}>Sport</span>
+          <select value={form.sport} onChange={e => set("sport", e.target.value)}>{SPORTS.map(s => <option key={s} value={s}>{s}</option>)}</select>
+        </label>
+        <label style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+          <span style={{ fontSize: 12, color: "#8b949e", fontWeight: 600 }}>Bet Type</span>
+          <select value={form.betType} onChange={e => set("betType", e.target.value)}>{BET_TYPES.map(t => <option key={t} value={t}>{t}</option>)}</select>
+        </label>
+        <label style={{ display: "flex", flexDirection: "column", gap: 4, gridColumn: "1/-1" }}>
+          <span style={{ fontSize: 12, color: "#8b949e", fontWeight: 600 }}>Event</span>
+          <input placeholder="e.g. Chiefs vs. Bengals" value={form.event} onChange={e => set("event", e.target.value)} />
+        </label>
+        <label style={{ display: "flex", flexDirection: "column", gap: 4, gridColumn: "1/-1" }}>
+          <span style={{ fontSize: 12, color: "#8b949e", fontWeight: 600 }}>Pick (Team / Player) *</span>
+          <input placeholder="e.g. Chiefs -3.5" value={form.pick} onChange={e => set("pick", e.target.value)} />
+        </label>
+        <label style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+          <span style={{ fontSize: 12, color: "#8b949e", fontWeight: 600 }}>Odds (American) *</span>
+          <input placeholder="+150 or -110" value={form.odds} onChange={e => set("odds", e.target.value)} />
+          {form.odds && <span style={{ fontSize: 11, color: "#484f58" }}>Implied: {pct(impliedProb)}</span>}
+        </label>
+        <label style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+          <span style={{ fontSize: 12, color: "#8b949e", fontWeight: 600 }}>Wager ($) *</span>
+          <input type="number" placeholder="100" value={form.wager} onChange={e => set("wager", e.target.value)} />
+        </label>
+        <label style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+          <span style={{ fontSize: 12, color: "#8b949e", fontWeight: 600 }}>Date</span>
+          <input type="date" value={form.date} onChange={e => set("date", e.target.value)} />
+        </label>
+        <label style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+          <span style={{ fontSize: 12, color: "#8b949e", fontWeight: 600 }}>Status</span>
+          <select value={form.status} onChange={e => set("status", e.target.value)}>{STATUSES.map(s => <option key={s} value={s}>{s}</option>)}</select>
+        </label>
+        <label style={{ display: "flex", flexDirection: "column", gap: 4, gridColumn: "1/-1" }}>
+          <span style={{ fontSize: 12, color: "#8b949e", fontWeight: 600 }}>Notes</span>
+          <input placeholder="Optional notes..." value={form.notes || ""} onChange={e => set("notes", e.target.value)} onKeyDown={e => e.key === "Enter" && handleSubmit()} />
+        </label>
+      </div>
+      {payout > 0 && (
+        <div style={{ background: "#1c2333", borderRadius: 10, padding: 14, marginTop: 16, display: "flex", justifyContent: "space-between" }}>
+          <div><span style={{ fontSize: 12, color: "#8b949e" }}>Potential Payout</span><div style={{ fontFamily: "'Outfit',sans-serif", fontWeight: 700, fontSize: 20, color: "#d4a853" }}>{fmt(payout)}</div></div>
+          <div style={{ textAlign: "right" }}><span style={{ fontSize: 12, color: "#8b949e" }}>Profit</span><div style={{ fontFamily: "'Outfit',sans-serif", fontWeight: 700, fontSize: 20, color: "#10b981" }}>{fmt(payout - parseFloat(form.wager))}</div></div>
+        </div>
+      )}
+      <div style={{ display: "flex", gap: 10, marginTop: 20, justifyContent: "flex-end" }}>
+        <button className="btn btn-ghost" onClick={onCancel}>Cancel</button>
+        <button className="btn btn-primary" disabled={!valid} onClick={handleSubmit}>Save Bet</button>
+      </div>
+    </div>
+  );
+}
+
+/* ═══════════════════════════════════════════════════════
+   POOLS TAB
+   ═══════════════════════════════════════════════════════ */
+function PoolsTab({ pools, onEdit, onDelete, onNew, onSave }) {
+  return (
+    <section style={{ animation: "fadeIn 0.3s" }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20, flexWrap: "wrap", gap: 12 }}>
+        <h1 style={{ fontFamily: "'Outfit',sans-serif", fontWeight: 800, fontSize: 28, background: "linear-gradient(135deg,#e6edf3,#8b949e)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>Pools & Contests</h1>
+        <button className="btn btn-primary" onClick={onNew}>+ New Pool</button>
+      </div>
+      {pools.length === 0 ? (
+        <div className="card" style={{ textAlign: "center", padding: 60 }}>
+          <div style={{ fontSize: 40, marginBottom: 12 }}>🏊</div>
+          <div style={{ color: "#8b949e", fontSize: 15 }}>No pools yet. Create one to start tracking!</div>
+        </div>
+      ) : (
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(340px,1fr))", gap: 14 }}>
+          {pools.map(p => <PoolCard key={p.id} pool={p} onEdit={() => onEdit(p)} onDelete={() => onDelete(p.id)} onSave={onSave} />)}
+        </div>
+      )}
+    </section>
+  );
+}
+
+function PoolCard({ pool, onEdit, onDelete, onSave }) {
+  const correct = pool.picks.filter(p => p.result === "Correct").length;
+  const total = pool.picks.length;
+  const wrong = pool.picks.filter(p => p.result === "Wrong").length;
+  const eliminated = pool.format === "Survivor" && wrong > 0;
+  const togglePick = (idx, result) => {
+    const np = { ...pool, picks: pool.picks.map((p, i) => i === idx ? { ...p, result: p.result === result ? "Pending" : result } : p) };
+    onSave(np);
+  };
+  return (
+    <div className="card" style={{ borderLeft: `3px solid ${eliminated ? "#ef4444" : "#3b82f6"}` }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 12 }}>
+        <div>
+          <div style={{ fontWeight: 700, fontSize: 16 }}>{pool.name || "Untitled Pool"}</div>
+          <div style={{ fontSize: 12, color: "#8b949e", display: "flex", gap: 8, marginTop: 2 }}><span>{pool.format}</span><span>•</span><span>{pool.sport}</span></div>
+        </div>
+        <div style={{ display: "flex", gap: 4, alignItems: "center" }}>
+          {eliminated && <span className="badge" style={{ background: "#ef444422", color: "#ef4444" }}>Eliminated</span>}
+          <button className="btn btn-ghost" style={{ padding: "4px 8px", fontSize: 11 }} onClick={onEdit}>Edit</button>
+          <button className="btn btn-danger" style={{ padding: "4px 8px", fontSize: 11 }} onClick={onDelete}>✕</button>
+        </div>
+      </div>
+      <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 12 }}>
+        <div style={{ flex: 1, height: 6, background: "#21262d", borderRadius: 3, overflow: "hidden" }}>
+          <div style={{ height: "100%", width: total > 0 ? `${(correct / total) * 100}%` : "0%", background: "linear-gradient(90deg,#10b981,#34d399)", borderRadius: 3, transition: "width 0.3s" }} />
+        </div>
+        <span style={{ fontSize: 13, fontFamily: "'JetBrains Mono',monospace", fontWeight: 600, color: "#10b981" }}>{correct}/{total}</span>
+      </div>
+      {pool.picks.length > 0 && (
+        <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+          {pool.picks.map((pick, i) => (
+            <div key={i} style={{ display: "flex", alignItems: "center", gap: 8, padding: "6px 8px", background: "#0d1117", borderRadius: 6, fontSize: 13 }}>
+              <span style={{ flex: 1 }}>{pick.name}{pick.confidence && <span style={{ marginLeft: 6, fontSize: 10, color: "#d4a853" }}>⭐{pick.confidence}</span>}</span>
+              <button onClick={() => togglePick(i, "Correct")} style={{ background: pick.result === "Correct" ? "#10b98133" : "transparent", border: "1px solid #21262d", borderRadius: 4, padding: "2px 8px", fontSize: 11, color: pick.result === "Correct" ? "#10b981" : "#484f58", cursor: "pointer" }}>✓</button>
+              <button onClick={() => togglePick(i, "Wrong")} style={{ background: pick.result === "Wrong" ? "#ef444433" : "transparent", border: "1px solid #21262d", borderRadius: 4, padding: "2px 8px", fontSize: 11, color: pick.result === "Wrong" ? "#ef4444" : "#484f58", cursor: "pointer" }}>✗</button>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ═══════════════════════════════════════════════════════
+   POOL FORM
+   ═══════════════════════════════════════════════════════ */
+function PoolForm({ pool, onSave, onCancel }) {
+  const [form, setForm] = useState({ ...pool, picks: pool.picks.length > 0 ? pool.picks : [] });
+  const [newPick, setNewPick] = useState("");
+  const [newConf, setNewConf] = useState("");
+  const set = (k, v) => setForm(p => ({ ...p, [k]: v }));
+  const addPick = () => {
+    if (!newPick.trim()) return;
+    set("picks", [...form.picks, { name: newPick.trim(), confidence: newConf ? parseInt(newConf) : null, result: "Pending" }]);
+    setNewPick(""); setNewConf("");
+  };
+  const removePick = i => set("picks", form.picks.filter((_, idx) => idx !== i));
+
+  return (
+    <div>
+      <h2 style={{ fontFamily: "'Outfit',sans-serif", fontWeight: 700, fontSize: 20, marginBottom: 20 }}>{pool.name ? "Edit Pool" : "New Pool"}</h2>
+      <div className="grid-2">
+        <label style={{ display: "flex", flexDirection: "column", gap: 4, gridColumn: "1/-1" }}>
+          <span style={{ fontSize: 12, color: "#8b949e", fontWeight: 600 }}>Pool Name</span>
+          <input placeholder="e.g. March Madness Bracket" value={form.name} onChange={e => set("name", e.target.value)} />
+        </label>
+        <label style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+          <span style={{ fontSize: 12, color: "#8b949e", fontWeight: 600 }}>Format</span>
+          <select value={form.format} onChange={e => set("format", e.target.value)}>{POOL_FORMATS.map(f => <option key={f} value={f}>{f}</option>)}</select>
+        </label>
+        <label style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+          <span style={{ fontSize: 12, color: "#8b949e", fontWeight: 600 }}>Sport</span>
+          <select value={form.sport} onChange={e => set("sport", e.target.value)}>{SPORTS.map(s => <option key={s} value={s}>{s}</option>)}</select>
+        </label>
+      </div>
+      <div style={{ marginTop: 16 }}>
+        <span style={{ fontSize: 12, color: "#8b949e", fontWeight: 600 }}>Picks</span>
+        <div style={{ display: "flex", gap: 8, marginTop: 6 }}>
+          <input style={{ flex: 1 }} placeholder="Pick name..." value={newPick} onChange={e => setNewPick(e.target.value)} onKeyDown={e => e.key === "Enter" && addPick()} />
+          {form.format === "Confidence" && <input style={{ width: 70 }} type="number" placeholder="Pts" value={newConf} onChange={e => setNewConf(e.target.value)} />}
+          <button className="btn btn-primary" style={{ padding: "8px 14px", whiteSpace: "nowrap" }} onClick={addPick}>Add</button>
+        </div>
+        <div style={{ display: "flex", flexDirection: "column", gap: 4, marginTop: 10 }}>
+          {form.picks.map((p, i) => (
+            <div key={i} style={{ display: "flex", alignItems: "center", gap: 8, padding: "6px 10px", background: "#0d1117", borderRadius: 6, fontSize: 13 }}>
+              <span style={{ flex: 1 }}>{p.name}{p.confidence && <span style={{ color: "#d4a853", marginLeft: 6 }}>⭐{p.confidence}</span>}</span>
+              <button style={{ background: "none", border: "none", color: "#ef4444", cursor: "pointer", fontSize: 14 }} onClick={() => removePick(i)}>✕</button>
+            </div>
+          ))}
+        </div>
+      </div>
+      <div style={{ display: "flex", gap: 10, marginTop: 20, justifyContent: "flex-end" }}>
+        <button className="btn btn-ghost" onClick={onCancel}>Cancel</button>
+        <button className="btn btn-primary" onClick={() => onSave(form)}>Save Pool</button>
+      </div>
+    </div>
+  );
+}
+
+/* ═══════════════════════════════════════════════════════
+   LIVE TAB
+   ═══════════════════════════════════════════════════════ */
+function LiveTab({ bets }) {
+  return (
+    <section style={{ animation: "fadeIn 0.3s" }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20, flexWrap: "wrap", gap: 12 }}>
+        <h1 style={{ fontFamily: "'Outfit',sans-serif", fontWeight: 800, fontSize: 28, background: "linear-gradient(135deg,#e6edf3,#8b949e)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>Live Bets</h1>
+      </div>
+      {bets.length === 0 ? (
+        <div className="card" style={{ textAlign: "center", padding: 60 }}>
+          <div style={{ fontSize: 40, marginBottom: 12 }}>⚡</div>
+          <div style={{ color: "#8b949e", fontSize: 15 }}>No pending bets. Add some and check back during game time!</div>
+        </div>
+      ) : (
+        <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+          <div className="card" style={{ background: "linear-gradient(135deg,#1a1c2e,#161b22)", borderColor: "#3b82f633", padding: 14 }}>
+            <div style={{ fontSize: 12, color: "#3b82f6", fontWeight: 600, marginBottom: 4 }}>ℹ️ Live Score Integration</div>
+            <div style={{ fontSize: 13, color: "#8b949e" }}>Your pending bets are shown below. Live score auto-refresh coming soon.</div>
+          </div>
+          {bets.map(b => (
+            <div key={b.id} className="card" style={{ padding: 16, borderLeft: "3px solid #f59e0b" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 8 }}>
+                <div>
+                  <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
+                    <span className="badge" style={{ background: "#f59e0b22", color: "#f59e0b" }}>Pending</span>
+                    <span style={{ fontSize: 11, color: "#484f58" }}>{b.sport} • {b.betType}</span>
+                  </div>
+                  <div style={{ fontWeight: 600, fontSize: 15 }}>{b.pick}</div>
+                  <div style={{ fontSize: 13, color: "#8b949e" }}>{b.event}</div>
+                </div>
+                <div style={{ textAlign: "right" }}>
+                  <div style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 14 }}>{fmt(b.wager)} → {fmt(calcPayout(b.odds, b.wager))}</div>
+                  <div style={{ fontSize: 11, color: "#484f58" }}>{b.odds > 0 ? "+" : ""}{b.odds}</div>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </section>
+  );
+}
+
+/* ═══════════════════════════════════════════════════════
+   BANKROLL MODAL
+   ═══════════════════════════════════════════════════════ */
+function BankrollModal({ bankroll, setBankroll, onClose }) {
+  const [newStart, setNewStart] = useState(bankroll.starting);
+  const [adjAmount, setAdjAmount] = useState("");
+  const [adjNote, setAdjNote] = useState("");
+  const addAdj = () => {
+    if (!adjAmount) return;
+    setBankroll(p => ({ ...p, adjustments: [...p.adjustments, { amount: parseFloat(adjAmount), note: adjNote || "Adjustment", date: new Date().toISOString() }] }));
+    setAdjAmount(""); setAdjNote("");
+  };
+  return (
+    <div>
+      <h2 style={{ fontFamily: "'Outfit',sans-serif", fontWeight: 700, fontSize: 20, marginBottom: 20 }}>💰 Bankroll Manager</h2>
+      <label style={{ display: "flex", flexDirection: "column", gap: 4, marginBottom: 16 }}>
+        <span style={{ fontSize: 12, color: "#8b949e", fontWeight: 600 }}>Starting Bankroll</span>
+        <div style={{ display: "flex", gap: 8 }}>
+          <input type="number" value={newStart} onChange={e => setNewStart(e.target.value)} />
+          <button className="btn btn-primary" style={{ whiteSpace: "nowrap" }} onClick={() => setBankroll(p => ({ ...p, starting: parseFloat(newStart) }))}>Set</button>
+        </div>
+      </label>
+      <div style={{ borderTop: "1px solid #21262d", paddingTop: 16, marginTop: 8 }}>
+        <span style={{ fontSize: 12, color: "#8b949e", fontWeight: 600 }}>Add Deposit / Withdrawal</span>
+        <div style={{ display: "flex", gap: 8, marginTop: 6, flexWrap: "wrap" }}>
+          <input type="number" placeholder="Amount (neg = withdrawal)" value={adjAmount} onChange={e => setAdjAmount(e.target.value)} style={{ width: 170 }} />
+          <input placeholder="Note" value={adjNote} onChange={e => setAdjNote(e.target.value)} style={{ flex: 1, minWidth: 120 }} />
+          <button className="btn btn-primary" onClick={addAdj}>Add</button>
+        </div>
+      </div>
+      {bankroll.adjustments.length > 0 && (
+        <div style={{ marginTop: 16, maxHeight: 200, overflowY: "auto" }}>
+          {bankroll.adjustments.map((a, i) => (
+            <div key={i} style={{ display: "flex", justifyContent: "space-between", padding: "6px 0", borderBottom: "1px solid #21262d", fontSize: 13 }}>
+              <span style={{ color: "#8b949e" }}>{a.note}</span>
+              <span style={{ fontFamily: "'JetBrains Mono',monospace", color: a.amount >= 0 ? "#10b981" : "#ef4444" }}>{a.amount >= 0 ? "+" : ""}{fmt(a.amount)}</span>
+            </div>
+          ))}
+        </div>
+      )}
+      <div style={{ display: "flex", justifyContent: "flex-end", marginTop: 20 }}>
+        <button className="btn btn-ghost" onClick={onClose}>Close</button>
+      </div>
+    </div>
+  );
+}
+
+/* ═══════════════════════════════════════════════════════
+   MOUNT
+   ═══════════════════════════════════════════════════════ */
+ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+</script>
+</body>
+</html>
